@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "HintLens MVP",
+    "slug": "hintlens-mvp",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "permissions": []
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
