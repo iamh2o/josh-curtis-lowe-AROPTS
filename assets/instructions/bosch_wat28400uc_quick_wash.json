@@ -1,0 +1,27 @@
+{
+  "deviceId": "bosch_wat28400uc",
+  "modelName": "Bosch WAT28400UC Washer",
+  "imageSize": { "width": 1080, "height": 1920 },
+  "goals": [
+    {
+      "id": "quick_wash_30c",
+      "name": "Quick Wash 30°C",
+      "summary": "Start a 30°C mixed-load quick wash cycle.",
+      "steps": [
+        { "text": "Turn dial to 'Mixed Load'.", "bbox": [420, 820, 260, 260] },
+        { "text": "Press 'Temp' until 30°C is highlighted.", "bbox": [760, 1020, 180, 120] },
+        { "text": "Press 'Start/Pause' to begin.", "bbox": [900, 1500, 160, 120] }
+      ]
+    },
+    {
+      "id": "toggle_chime",
+      "name": "Toggle End-of-cycle Chime",
+      "summary": "Turn the signal chime on or off.",
+      "steps": [
+        { "text": "Tap the 'Options' button to open the menu.", "bbox": [740, 1220, 220, 120] },
+        { "text": "Rotate the dial to navigate to 'Signal'.", "bbox": [420, 820, 260, 260] },
+        { "text": "Press 'Spin Speed' to toggle the chime.", "bbox": [760, 1140, 200, 120] }
+      ]
+    }
+  ]
+}
