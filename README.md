@@ -8,6 +8,7 @@ An Expo-based prototype for **HintLens**, an AR helper that overlays step-by-ste
 - Highlights the relevant control for the current instruction step.
 - Lets users pick between multiple predefined goals for the same device.
 - Provides quick feedback buttons to capture whether the instructions were helpful.
+- Offers a web handoff link when a goal is completed so users can continue outside the app.
 - Encodes goals and bounding boxes in a reusable JSON format located in `assets/instructions`.
 
 ## Getting started
