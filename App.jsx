@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Pressable, FlatList } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Pressable, FlatList, Linking } from 'react-native';
 import { Camera, CameraType, useCameraPermissions } from 'expo-camera';
 import { StatusBar } from 'expo-status-bar';
 
@@ -10,12 +10,15 @@ const FEEDBACK_OPTIONS = {
   WRONG: 'wrong'
 };
 
+const SUCCESS_URL = 'https://hintlens.app';
+
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const [selectedGoalId, setSelectedGoalId] = useState(instructionData.goals[0]?.id);
   const [stepIndex, setStepIndex] = useState(0);
   const [layout, setLayout] = useState({ width: 0, height: 0 });
   const [feedback, setFeedback] = useState(null);
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -26,6 +29,7 @@ export default function App() {
   useEffect(() => {
     setStepIndex(0);
     setFeedback(null);
+    setIsComplete(false);
   }, [selectedGoalId]);
 
   const selectedGoal = useMemo(
@@ -34,15 +38,30 @@ export default function App() {
   );
 
   const steps = selectedGoal?.steps ?? [];
-  const currentStep = steps[stepIndex];
+  const currentStep = !isComplete ? steps[stepIndex] : null;
+  const showCompletion = isComplete && steps.length > 0;
 
   const handleAdvance = () => {
+    if (!steps.length) {
+      return;
+    }
+
     setFeedback(null);
+
+    if (isLastStep) {
+      setIsComplete(true);
+      return;
+    }
+
     setStepIndex((prev) => Math.min(prev + 1, steps.length - 1));
   };
 
   const handleBack = () => {
     setFeedback(null);
+    if (isComplete) {
+      setIsComplete(false);
+      return;
+    }
     setStepIndex((prev) => Math.max(prev - 1, 0));
   };
 
@@ -53,6 +72,18 @@ export default function App() {
   const isLastStep = stepIndex === steps.length - 1;
 
   const highlightStyle = currentStep ? computeHighlightStyle(currentStep.bbox, layout, instructionData.imageSize) : null;
+
+  const handleRestart = () => {
+    setFeedback(null);
+    setIsComplete(false);
+    setStepIndex(0);
+  };
+
+  const handleOpenUrl = () => {
+    Linking.openURL(SUCCESS_URL).catch((error) => {
+      console.warn('Failed to open success URL', error);
+    });
+  };
 
   if (!permission) {
     return (
@@ -107,7 +138,26 @@ export default function App() {
           )}
         />
 
-        {currentStep ? (
+        {showCompletion ? (
+          <View style={styles.completionContainer}>
+            <Text style={styles.completionTitle}>All steps complete!</Text>
+            <Text style={styles.completionMessage}>
+              View the run summary on the web at{' '}
+              <Text style={styles.completionLink} onPress={handleOpenUrl}>
+                {SUCCESS_URL}
+              </Text>
+              .
+            </Text>
+            <View style={styles.controlsRow}>
+              <Pressable onPress={handleOpenUrl} style={styles.primaryButton}>
+                <Text style={styles.primaryButtonLabel}>Open web summary</Text>
+              </Pressable>
+              <Pressable onPress={handleRestart} style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonLabel}>Restart goal</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : currentStep ? (
           <View style={styles.stepContainer}>
             <Text style={styles.stepCounter}>
               Step {stepIndex + 1} of {steps.length}
@@ -115,17 +165,15 @@ export default function App() {
             <Text style={styles.stepText}>{currentStep.text}</Text>
 
             <View style={styles.controlsRow}>
-              <Pressable onPress={handleBack} style={[styles.secondaryButton, stepIndex === 0 && styles.disabledButton]} disabled={stepIndex === 0}>
+              <Pressable
+                onPress={handleBack}
+                style={[styles.secondaryButton, stepIndex === 0 && styles.disabledButton]}
+                disabled={stepIndex === 0}
+              >
                 <Text style={[styles.secondaryButtonLabel, stepIndex === 0 && styles.disabledButtonLabel]}>Back</Text>
               </Pressable>
-              <Pressable
-                onPress={handleAdvance}
-                style={[styles.primaryButton, isLastStep && styles.disabledButton]}
-                disabled={isLastStep}
-              >
-                <Text style={[styles.primaryButtonLabel, isLastStep && styles.disabledButtonLabel]}>
-                  {isLastStep ? 'Done' : 'Next'}
-                </Text>
+              <Pressable onPress={handleAdvance} style={styles.primaryButton}>
+                <Text style={styles.primaryButtonLabel}>{isLastStep ? 'Done' : 'Next'}</Text>
               </Pressable>
             </View>
 
@@ -345,5 +393,26 @@ const styles = StyleSheet.create({
   feedbackThanks: {
     color: '#22d3ee',
     fontSize: 12
+  },
+  completionContainer: {
+    backgroundColor: '#020617',
+    borderRadius: 16,
+    padding: 16,
+    gap: 12
+  },
+  completionTitle: {
+    color: '#38bdf8',
+    fontWeight: '700',
+    fontSize: 18
+  },
+  completionMessage: {
+    color: '#f8fafc',
+    fontSize: 16,
+    lineHeight: 22
+  },
+  completionLink: {
+    color: '#22d3ee',
+    fontWeight: '600',
+    textDecorationLine: 'underline'
   }
 });
